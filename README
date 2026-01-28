@@ -1,0 +1,1 @@
+docker run --name dio-corebank-db -e POSTGRES_PASSWORD=1234 -e POSTGRES_DB=dio_corebank_db -p 5432:5432 -d postgres:latest
