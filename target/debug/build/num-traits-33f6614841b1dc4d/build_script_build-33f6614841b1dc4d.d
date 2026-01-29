@@ -1,0 +1,5 @@
+C:\Users\User\Desktop\dio-corebank\target\debug\build\num-traits-33f6614841b1dc4d\build_script_build-33f6614841b1dc4d.d: C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\num-traits-0.2.19\build.rs
+
+C:\Users\User\Desktop\dio-corebank\target\debug\build\num-traits-33f6614841b1dc4d\build_script_build-33f6614841b1dc4d.exe: C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\num-traits-0.2.19\build.rs
+
+C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\num-traits-0.2.19\build.rs:

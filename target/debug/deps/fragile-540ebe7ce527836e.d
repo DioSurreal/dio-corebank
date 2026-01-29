@@ -1,0 +1,11 @@
+C:\Users\User\Desktop\dio-corebank\target\debug\deps\fragile-540ebe7ce527836e.d: C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\lib.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\errors.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\fragile.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\registry.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\semisticky.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\sticky.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\thread_id.rs
+
+C:\Users\User\Desktop\dio-corebank\target\debug\deps\libfragile-540ebe7ce527836e.rmeta: C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\lib.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\errors.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\fragile.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\registry.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\semisticky.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\sticky.rs C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\thread_id.rs
+
+C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\lib.rs:
+C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\errors.rs:
+C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\fragile.rs:
+C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\registry.rs:
+C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\semisticky.rs:
+C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\sticky.rs:
+C:\Users\User\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fragile-2.0.1\src\thread_id.rs:
