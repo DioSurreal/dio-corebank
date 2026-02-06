@@ -27,3 +27,6 @@ anyhow = "1.0.93"
 argon2 = "0.5.3"
 rand = "0.8.5"
 jsonwebtoken = { version = "9", default-features = false }
+bigdecimal = "0.4.10"
+rust_decimal = "1.40.0"
+thiserror = "2.0.18"

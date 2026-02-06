@@ -6,10 +6,7 @@ diesel::table! {
         customer_id -> Int8,
         #[max_length = 50]
         account_number -> Varchar,
-        #[max_length = 3]
-        currency -> Bpchar,
         balance -> Numeric,
-        available_balance -> Numeric,
         #[max_length = 50]
         status -> Varchar,
         created_at -> Timestamp,
@@ -37,14 +34,14 @@ diesel::table! {
 }
 
 diesel::table! {
-    clearing_items (clearing_item_id) {
-        clearing_item_id -> Int8,
-        job_id -> Int8,
-        transaction_id -> Uuid,
+    clearing_cheque_batch (clearing_cheque_id) {
+        clearing_cheque_id -> Int8,
+        cheque_id -> Int8,
         account_id -> Int8,
         amount -> Numeric,
         #[max_length = 50]
         bank_code -> Varchar,
+        job_id -> Int8,
         #[max_length = 50]
         status -> Varchar,
         created_at -> Timestamp,
@@ -60,6 +57,22 @@ diesel::table! {
         #[max_length = 50]
         status -> Varchar,
         created_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    clearing_transactions_batch (clearing_item_id) {
+        clearing_item_id -> Int8,
+        transaction_id -> Int8,
+        account_id -> Int8,
+        amount -> Numeric,
+        #[max_length = 50]
+        bank_code -> Varchar,
+        job_id -> Int8,
+        #[max_length = 50]
+        status -> Varchar,
+        created_at -> Timestamp,
+        completed_at -> Nullable<Timestamp>,
     }
 }
 
@@ -91,7 +104,7 @@ diesel::table! {
 diesel::table! {
     ledger_entries (entry_id) {
         entry_id -> Int8,
-        transaction_id -> Uuid,
+        transaction_id -> Int8,
         account_id -> Int8,
         #[max_length = 10]
         direction -> Varchar,
@@ -113,13 +126,16 @@ diesel::table! {
 
 diesel::table! {
     transactions (transaction_id) {
-        transaction_id -> Uuid,
+        transaction_id -> Int8,
         #[max_length = 100]
         idempotency_key -> Varchar,
         #[max_length = 50]
         transaction_type -> Varchar,
         #[max_length = 50]
         channel -> Varchar,
+        amount -> Numeric,
+        #[max_length = 50]
+        receiver_bank_code -> Varchar,
         from_account_id -> Nullable<Int8>,
         to_account_id -> Nullable<Int8>,
         #[max_length = 50]
@@ -131,17 +147,21 @@ diesel::table! {
 
 diesel::joinable!(accounts -> customers (customer_id));
 diesel::joinable!(cheque_transactions -> accounts (depositor_account_id));
-diesel::joinable!(clearing_items -> accounts (account_id));
-diesel::joinable!(clearing_items -> clearing_jobs (job_id));
-diesel::joinable!(clearing_items -> transactions (transaction_id));
+diesel::joinable!(clearing_cheque_batch -> accounts (account_id));
+diesel::joinable!(clearing_cheque_batch -> cheque_transactions (cheque_id));
+diesel::joinable!(clearing_cheque_batch -> clearing_jobs (job_id));
+diesel::joinable!(clearing_transactions_batch -> accounts (account_id));
+diesel::joinable!(clearing_transactions_batch -> clearing_jobs (job_id));
+diesel::joinable!(clearing_transactions_batch -> transactions (transaction_id));
 diesel::joinable!(ledger_entries -> accounts (account_id));
 diesel::joinable!(ledger_entries -> transactions (transaction_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     accounts,
     cheque_transactions,
-    clearing_items,
+    clearing_cheque_batch,
     clearing_jobs,
+    clearing_transactions_batch,
     customers,
     fees,
     ledger_entries,

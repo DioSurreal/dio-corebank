@@ -21,9 +21,7 @@ CREATE TABLE accounts (
     account_id BIGSERIAL PRIMARY KEY,
     customer_id BIGINT NOT NULL REFERENCES customers(customer_id),
     account_number VARCHAR(50) NOT NULL UNIQUE,
-    currency CHAR(3) NOT NULL,
-    balance NUMERIC(18,2) NOT NULL DEFAULT 0,
-    available_balance NUMERIC(18,2) NOT NULL DEFAULT 0,
+    balance NUMERIC(18, 2) NOT NULL DEFAULT 0.00 CHECK (balance >= 0),
     status VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now()
@@ -35,10 +33,12 @@ CREATE INDEX idx_accounts_customer_id ON accounts(customer_id);
 -- transactions
 -- =========================
 CREATE TABLE transactions (
-    transaction_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    transaction_id BIGSERIAL PRIMARY KEY,
     idempotency_key VARCHAR(100) NOT NULL UNIQUE,
     transaction_type VARCHAR(50) NOT NULL,
     channel VARCHAR(50) NOT NULL,
+    amount NUMERIC(18, 2) NOT NULL,
+    receiver_bank_code VARCHAR(50) NOT NULL,
     from_account_id BIGINT REFERENCES accounts(account_id),
     to_account_id BIGINT REFERENCES accounts(account_id),
     status VARCHAR(50) NOT NULL,
@@ -47,6 +47,7 @@ CREATE TABLE transactions (
 );
 
 CREATE INDEX idx_transactions_from_account ON transactions(from_account_id);
+
 CREATE INDEX idx_transactions_to_account ON transactions(to_account_id);
 
 -- =========================
@@ -54,16 +55,17 @@ CREATE INDEX idx_transactions_to_account ON transactions(to_account_id);
 -- =========================
 CREATE TABLE ledger_entries (
     entry_id BIGSERIAL PRIMARY KEY,
-    transaction_id UUID NOT NULL REFERENCES transactions(transaction_id),
+    transaction_id BIGINT NOT NULL REFERENCES transactions(transaction_id),
     account_id BIGINT NOT NULL REFERENCES accounts(account_id),
     direction VARCHAR(10) NOT NULL,
-    amount NUMERIC(18,2) NOT NULL,
+    amount NUMERIC(18, 2) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     CONSTRAINT chk_ledger_amount_positive CHECK (amount > 0),
-    CONSTRAINT chk_ledger_direction CHECK (direction IN ('DEBIT','CREDIT'))
+    CONSTRAINT chk_ledger_direction CHECK (direction IN ('DEBIT', 'CREDIT'))
 );
 
 CREATE INDEX idx_ledger_account_id ON ledger_entries(account_id);
+
 CREATE INDEX idx_ledger_transaction_id ON ledger_entries(transaction_id);
 
 -- =========================
@@ -72,7 +74,7 @@ CREATE INDEX idx_ledger_transaction_id ON ledger_entries(transaction_id);
 CREATE TABLE fees (
     fee_id BIGSERIAL PRIMARY KEY,
     fee_type VARCHAR(100) NOT NULL,
-    rate NUMERIC(8,4) NOT NULL,
+    rate NUMERIC(8, 4) NOT NULL,
     active BOOLEAN NOT NULL DEFAULT true,
     updated_by VARCHAR(100) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
@@ -87,16 +89,21 @@ CREATE TABLE cheque_transactions (
     cheque_number VARCHAR(100) NOT NULL,
     issuing_bank_code VARCHAR(50) NOT NULL,
     issuing_account_number VARCHAR(100) NOT NULL,
-    amount NUMERIC(18,2) NOT NULL,
-
+    amount NUMERIC(18, 2) NOT NULL,
     depositor_account_id BIGINT NOT NULL REFERENCES accounts(account_id),
-
-    status VARCHAR(50) NOT NULL,
-
+    status VARCHAR(50) NOT NULL CHECK (
+        status IN (
+            'RECEIVED',
+            'PENDING_CLEARING',
+            'CLEARED',
+            'RETURNED',
+            'SETTLED',
+            'CANCELLED'
+        )
+    ),
     received_at TIMESTAMP NOT NULL DEFAULT now(),
     cleared_at TIMESTAMP,
     settled_at TIMESTAMP,
-
     CONSTRAINT uq_cheque UNIQUE (cheque_number, issuing_bank_code)
 );
 
@@ -113,22 +120,44 @@ CREATE TABLE clearing_jobs (
 );
 
 -- =========================
--- clearing_items
+-- clearing_transactions_batch
 -- =========================
-CREATE TABLE clearing_items (
+CREATE TABLE clearing_transactions_batch (
     clearing_item_id BIGSERIAL PRIMARY KEY,
-    job_id BIGINT NOT NULL REFERENCES clearing_jobs(job_id),
-    transaction_id UUID NOT NULL REFERENCES transactions(transaction_id),
+    transaction_id BIGINT NOT NULL REFERENCES transactions(transaction_id),
     account_id BIGINT NOT NULL REFERENCES accounts(account_id),
-    amount NUMERIC(18,2) NOT NULL,
+    amount NUMERIC(18, 2) NOT NULL,
     bank_code VARCHAR(50) NOT NULL,
+    job_id BIGINT NOT NULL REFERENCES clearing_jobs(job_id),
     status VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     completed_at TIMESTAMP
 );
 
-CREATE INDEX idx_clearing_items_job_id ON clearing_items(job_id);
-CREATE INDEX idx_clearing_items_account_id ON clearing_items(account_id);
+CREATE INDEX idx_clearing_transactions_batch_job_id ON clearing_transactions_batch(job_id);
+
+CREATE INDEX idx_clearing_transactions_batch_account_id ON clearing_transactions_batch(account_id);
+
+-- =========================
+-- clearing_cheque_batch
+-- =========================
+CREATE TABLE clearing_cheque_batch (
+    clearing_cheque_id BIGSERIAL PRIMARY KEY,
+    cheque_id BIGINT NOT NULL REFERENCES cheque_transactions(cheque_id),
+    account_id BIGINT NOT NULL REFERENCES accounts(account_id),
+    amount NUMERIC(18, 2) NOT NULL,
+    bank_code VARCHAR(50) NOT NULL,
+    job_id BIGINT NOT NULL REFERENCES clearing_jobs(job_id),
+    status VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    completed_at TIMESTAMP
+);
+
+CREATE INDEX idx_clearing_cheque_batch_job_id ON clearing_cheque_batch(job_id);
+
+CREATE INDEX idx_clearing_cheque_batch_account_id ON clearing_cheque_batch(account_id);
+
+CREATE INDEX idx_clearing_cheque_batch_cheque_id ON clearing_cheque_batch(cheque_id);
 
 -- =========================
 -- system accounts (optional but recommended)
@@ -143,9 +172,16 @@ CREATE TABLE system_accounts (
 -- =========================
 -- seed system accounts
 -- =========================
-INSERT INTO system_accounts (code, description) VALUES
-('CASH_VAULT', 'Physical cash vault'),
-('ATM_SETTLEMENT', 'ATM settlement account'),
-('INTERBANK_SUSPENSE', 'Interbank clearing suspense account'),
-('CHEQUE_SUSPENSE', 'Cheque clearing suspense account');
-
+INSERT INTO
+    system_accounts (code, description)
+VALUES
+    ('CASH_VAULT', 'Physical cash vault'),
+    ('ATM_SETTLEMENT', 'ATM settlement account'),
+    (
+        'INTERBANK_SUSPENSE',
+        'Interbank clearing suspense account'
+    ),
+    (
+        'CHEQUE_SUSPENSE',
+        'Cheque clearing suspense account'
+    );
